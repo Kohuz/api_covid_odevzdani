@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>Krajská města a COVID v krajích ČR</title>
+
+	<meta charset="utf-8" />
+
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!--LEAFLET-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=8ozMUcjE484H3MN_yPKT1hpsfMACx8KtK2cM2FXTedtuZestqODFD81vVDDAs59JOMlMK9gsbb-GX3jzU_U2RQEWrcq-8q-z3hsjij0wGTw" charset="UTF-8"></script><script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<!--minimapa-->
+	<link rel="stylesheet" href="http://norkart.github.io/Leaflet-MiniMap/Control.MiniMap.css" />
+	<script src="http://norkart.github.io/Leaflet-MiniMap/Control.MiniMap.js" type="text/javascript"></script>
+	
+<!--HOMEBUTTON-->
+	<script src="https://torfsen.github.io/leaflet.zoomhome/jquery-1.11.2.min.js"></script>
+	<script src="https://torfsen.github.io/leaflet.zoomhome/dist/leaflet.zoomhome.min.js"></script>
+	<link rel="stylesheet" href="https://torfsen.github.io/leaflet.zoomhome/dist/leaflet.zoomhome.css"/>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css"/>
+<!--FULLSCREENSTYLING-->
+	<style type="text/css">
+	
+		#map:-webkit-full-screen { width: 100% !important; height: 100% !important; z-index: 99999; }
+		#map:-ms-fullscreen { width: 100% !important; height: 100% !important; z-index: 99999; }
+		#map:fullscreen { width: 100% !important; height: 100% !important; z-index: 99999; }
+		#map:fullscreen { width: 100% !important; height: 100% !important; z-index: 99999; }
+		.leaflet-pseudo-fullscreen { position: fixed !important; width: 100% !important; height: 100% !important; top: 0px !important; left: 0px !important; z-index: 99999; }
+		.leaflet-control-zoom-fullscreen { background-image: url(https://github.com/brunob/leaflet.fullscreen/raw/master/icon-fullscreen.png); }
+		.leaflet-retina .leaflet-control-zoom-fullscreen { background-image: url(https://github.com/brunob/leaflet.fullscreen/raw/master/icon-fullscreen-2x.png); background-size: 26px 26px; }
+	</style>
+</head>
+<body>
+
+
+
+<div id="mapid" style="width: 600px; height: 400px;"></div>
+<script>
+
+
+	var mymap = L.map('mapid', {
+    center: [49.8, 15.3],
+    zoom: 6,
+	zoomControl : false
+});
+	//PODKLADOVA-DEFAULT
+	var base =  L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+		maxZoom: 18,
+		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+			'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+		id: 'mapbox/streets-v11',
+		tileSize: 512,
+		zoomOffset: -1
+	}).addTo(mymap);
+	// BARVY ZOOM-IN AND OUT
+	//document.getElementsByClassName("leaflet-control-zoom-in")[0].style.setProperty('background-color', 'orange');
+	//document.getElementsByClassName("leaflet-control-zoom-out")[0].style.setProperty('background-color', 'olive');
+	//document.getElementsByClassName("leaflet-control-zoom-out")[0].style.setProperty('background-color', 'olive');
+	//PODKLADOVA MINIMAPA
+	var base2 = L.tileLayer('https://map1.vis.earthdata.nasa.gov/wmts-webmerc/VIIRS_CityLights_2012/default/{time}/{tilematrixset}{maxZoom}/{z}/{y}/{x}.{format}', {
+	attribution: 'Imagery provided by services from the Global Imagery Browse Services (GIBS), operated by the NASA/GSFC/Earth Science Data and Information System (<a href="https://earthdata.nasa.gov">ESDIS</a>) with funding provided by NASA/HQ.',
+	bounds: [[-85.0511287776, -179.999999975], [85.0511287776, 179.999999975]],
+	minZoom: 1,
+	maxZoom: 8,
+	format: 'jpg',
+	time: '',
+	tilematrixset: 'GoogleMapsCompatible_Level'
+});
+//PODKLADOVA TOPOGRAF
+	var topograf = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	maxZoom: 17,
+	attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+});
+
+var mapycz = new L.tileLayer('http://m{s}.mapserver.mapy.cz/base-m/{z}-{x}-{y}',{ident:'mapycz',attribution:'&copy;Seznam.cz a.s., | &copy;OpenStreetMap <a href="http://mapy.cz"><img class="print" target="_blank" src="//api.mapy.cz/img/api/logo.png" style="cursor: pointer; position:relative;top: 5px;"></a>',maxZoom:21,subdomains:"1234"});
+//POPUP POLYGONY KRAJE
+	function onEachFeature(feature, layer)
+	{
+		var popupContent = "<ul> <li>Název kraje: "+ feature.properties.name + "</li>" +
+			"<li>Nakažení: "+ feature.properties.total_infected + "</li>" +
+			"<li>Průměrný věk: "+ feature.properties.avg_age + "</li>" + 
+			"<li>Muži: "+ feature.properties.men + " %</li>" + 
+			"<li>Průměrný věk mužů: "+ feature.properties.avg_age_men + " </li>" + 
+			"<li>Ženy: "+ feature.properties.women + " %</li>" +
+			"<li>Průměrný věk žen: "+ feature.properties.avg_age_women + "</li>" +
+			"</ul>";
+		layer.bindPopup(popupContent);
+
+	}
+	// ikona kraje
+	var ikona = L.icon({iconUrl: 'https://svgsilh.com/svg/1864379.svg',
+	iconSize:     [38, 45],
+    iconAnchor:   [20, 35], 
+    popupAnchor:  [4, -32]} );
+
+	var mesta = L.layerGroup();
+	//ikony krajů
+	L.marker([50.0835494, 14.4341414], {icon:ikona}).addTo(mesta)//Praha
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Praha_CoA_CZ_small.svg/800px-Praha_CoA_CZ_small.svg.png'></img><p>Hlavní město Praha<br><a href='https://www.praha.eu/jnp/cz/index.html'target='_blank'>Webové stránky</a></p>");
+	L.marker([50.7699972, 15.0584492], {icon:ikona}).addTo(mesta)//Liberec
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Znak_Liberec.svg/466px-Znak_Liberec.svg.png'></img><p>Liberec<br><a href='https://www.liberec.cz/cz/obcan/'target='_blank'>Webové stránky</a></p>");
+	L.marker([49.7477831, 13.3783489], {icon:ikona}).addTo(mesta)//Plzeň
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Plzen_small_CoA.png/90px-Plzen_small_CoA.png'></img><p>Plzeň<br><a href='http://www.plzen.eu/'target='_blank'>Webové stránky</a></p>");
+	L.marker([50.2339389, 12.8604439], {icon:ikona}).addTo(mesta)//Karlovy vary
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Karlovy_Vary_%28znak%29.gif/90px-Karlovy_Vary_%28znak%29.gif'></img><p>Karlovy Vary<br><a href='http://www.mmkv.cz/'target='_blank'>Webové stránky</a></p>");
+	L.marker([50.6604875, 14.0406928], {icon:ikona}).addTo(mesta)//ústí
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Usti_znak.png/90px-Usti_znak.png'></img><p>Ústí nad Labem<br><a href='https://www.usti-nad-labem.cz/cz/'target='_blank'>Webové stránky</a></p>");
+	L.marker([48.9744689, 14.4743419], {icon:ikona}).addTo(mesta)//české budějovice
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Coat_of_arms_of_%C4%8Cesk%C3%A9_Bud%C4%9Bjovice.svg/286px-Coat_of_arms_of_%C4%8Cesk%C3%A9_Bud%C4%9Bjovice.svg.png'></img><p>České Budějovice<br><a href='http://www.c-budejovice.cz/'target='_blank'>Webové stránky</a></p>");
+	L.marker([49.3961000, 15.5912447], {icon:ikona}).addTo(mesta)//Jihlava
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Jihlava_%28CZE%29_-_coat_of_arms.gif/90px-Jihlava_%28CZE%29_-_coat_of_arms.gif'></img><p>Jihlava<br><a href='http://www.jihlava.cz/'target='_blank'>Webové stránky</a></p>");
+	L.marker([50.0378047, 15.7772939], {icon:ikona}).addTo(mesta)//Pardubice
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Pardubice_CoA_CZ.svg/90px-Pardubice_CoA_CZ.svg.png'></img><p>Pardubice<br><a href='http://www.mesto-pardubice.cz/'target='_blank'>Webové stránky</a></p>");
+	L.marker([50.2092283, 15.8327683], {icon:ikona}).addTo(mesta)//Hradec Králové
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Hradec_Kralove_CoA_CZ.svg/90px-Hradec_Kralove_CoA_CZ.svg.png'></img><p>Hradec Králové<br><a href='http://www.hradeckralove.org/'target='_blank'>Webové stránky</a></p>");
+	L.marker([49.2002211, 16.6078411], {icon:ikona}).addTo(mesta)//Brno
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Brno_%28znak%29.svg/90px-Brno_%28znak%29.svg.png'></img><p>Brno<br><a href='http://www.brno.cz/'target='_blank'>Webové stránky</a></p>");
+	L.marker([49.5938686, 17.2508706], {icon:ikona}).addTo(mesta)//Olomouc
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Coat_of_arms_of_Olomouc%2C_city_in_the_Czech_Republic.svg/90px-Coat_of_arms_of_Olomouc%2C_city_in_the_Czech_Republic.svg.png'></img><p>Olomoucc<br><a href='http://www.olomouc.eu/'target='_blank'>Webové stránky</a></p>");
+	L.marker([49.2266542, 17.6663339], {icon:ikona}).addTo(mesta)//Zlín
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Zlin_-_znak.svg/512px-Zlin_-_znak.svg.png'></img><p>Zlín<br><a href='http://www.zlin.eu/'target='_blank'>Webové stránky</a></p>");
+	L.marker([49.8346453, 18.2820442], {icon:ikona}).addTo(mesta)//Ostrava
+		.bindPopup("<img style='height:90px;' src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Ostrava_CoA_CZ.svg/180px-Ostrava_CoA_CZ.svg.png'></img><p>Ostrava<br><a href='http://www.ostrava.cz/'target='_blank'>Webové stránky</a></p>");
+	
+	var kraje = L.geoJSON (null, {onEachFeature: onEachFeature});
+	$.getJSON("/covid_kraje_json", function(data)
+	{
+		kraje.addData(data);
+		kraje.addTo(Kraje);
+	});
+	var miniMap = new L.Control.MiniMap(base2, { toggleDisplay: true }).addTo(mymap);
+	var zoomHome = L.Control.zoomHome();
+                zoomHome.addTo(mymap);
+
+	var baseLayers = {
+		"Základní": base,
+		"Topografická": topograf,
+		"Mapy.cz" :mapycz
+	};
+	var overlays = {
+		"Krajská města": mesta,
+		"Kraje" :kraje
+	};
+
+	L.control.layers(baseLayers, overlays).addTo(mymap);
+
+
+
+
+</script>
+
+
+
+</body>
+</html>
